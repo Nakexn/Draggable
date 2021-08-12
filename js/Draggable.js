@@ -23,8 +23,8 @@
       this.$el.clientWidth;
     this.maxTop = this.$container.offsetTop;
     this.maxBottom = this.$container.offsetTop + this.$container.clientHeight;
-    this.$container.style.overflow = 'hidden';
     this.rect = this.$el.getBoundingClientRect();
+    this.$container.style.overflow = 'hidden';
     this.handleMouseMove = handleMouseMove.bind(this);
     this.init();
   }
@@ -38,6 +38,17 @@
     // this.$target.addEventListener('mouseup', handleEnd.bind(this));
     window.addEventListener('mouseup', handleEnd.bind(this));
     window.addEventListener('mouseleave', handleEnd.bind(this));
+    window.addEventListener('resize', () => {
+      this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
+      this.maxRight =
+        this.$container.offsetLeft +
+        this.$container.clientWidth -
+        this.$el.offsetLeft -
+        this.$el.clientWidth;
+      this.maxTop = this.$container.offsetTop;
+      this.maxBottom = this.$container.offsetTop + this.$container.clientHeight;
+    });
+    this.rect = this.$el.getBoundingClientRect();
   };
 
   function handleMouseOver(e) {
