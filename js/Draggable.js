@@ -25,12 +25,16 @@
     this.maxBottom = this.$container.offsetTop + this.$container.clientHeight;
     this.$container.style.overflow = 'hidden';
     this.rect = this.$el.getBoundingClientRect();
+    this.handleMouseMove = handleMouseMove.bind(this);
     this.init();
   }
 
   Draggable.prototype.init = function () {
     this.$target.addEventListener('mouseover', handleMouseOver.bind(this));
     this.$target.addEventListener('mousedown', handleMouseDown.bind(this));
+    this.$el.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
     // this.$target.addEventListener('mouseup', handleEnd.bind(this));
     window.addEventListener('mouseup', handleEnd.bind(this));
     window.addEventListener('mouseleave', handleEnd.bind(this));
@@ -43,10 +47,11 @@
   function handleMouseDown(e) {
     e.preventDefault();
 
-    this.mouseX = e.pageX;
-    this.mouseY = e.pageY;
-    this.handleMouseMove = handleMouseMove.bind(this);
-    window.addEventListener('mousemove', this.handleMouseMove);
+    if (e.button === 0) {
+      this.mouseX = e.pageX;
+      this.mouseY = e.pageY;
+      window.addEventListener('mousemove', this.handleMouseMove);
+    }
   }
 
   function handleMouseMove(e) {
