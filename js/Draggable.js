@@ -18,11 +18,11 @@
     this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
     this.maxRight =
       this.$container.offsetLeft +
-      this.$container.clientWidth -
+      this.$container.offsetWidth -
       this.$el.offsetLeft -
-      this.$el.clientWidth;
+      this.$el.offsetWidth;
     this.maxTop = this.$container.offsetTop;
-    this.maxBottom = this.$container.offsetTop + this.$container.clientHeight;
+    this.maxBottom = this.$container.offsetTop + this.$container.offsetHeight;
     this.rect = this.$el.getBoundingClientRect();
     this.$container.style.overflow = 'hidden';
     this.handleMouseMove = handleMouseMove.bind(this);
@@ -30,25 +30,27 @@
   }
 
   Draggable.prototype.init = function () {
-    this.$target.addEventListener('mouseover', handleMouseOver.bind(this));
-    this.$target.addEventListener('mousedown', handleMouseDown.bind(this));
     this.$el.addEventListener('contextmenu', e => {
       e.preventDefault();
     });
 
+    this.$target.addEventListener('mouseover', handleMouseOver.bind(this));
+    this.$target.addEventListener('mousedown', handleMouseDown.bind(this));
+
     root.addEventListener('mouseup', handleEnd.bind(this));
     root.addEventListener('mouseleave', handleEnd.bind(this));
+
     root.addEventListener('resize', () => {
       this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
       this.maxRight =
         this.$container.offsetLeft +
-        this.$container.clientWidth -
+        this.$container.offsetWidth -
         this.$el.offsetLeft -
-        this.$el.clientWidth;
+        this.$el.offsetWidth;
       this.maxTop = this.$container.offsetTop;
-      this.maxBottom = this.$container.offsetTop + this.$container.clientHeight;
+      this.maxBottom = this.$container.offsetTop + this.$container.offsetHeight;
+      this.rect = this.$el.getBoundingClientRect();
     });
-    this.rect = this.$el.getBoundingClientRect();
   };
 
   function handleMouseOver(e) {
@@ -75,7 +77,7 @@
       this.originX + offsetX < this.maxLeft ||
       this.originX + offsetX > this.maxRight ||
       this.originY + offsetY + this.$el.offsetTop < this.maxTop ||
-      this.originY + offsetY + this.$el.offsetTop + this.$el.clientHeight > this.maxBottom
+      this.originY + offsetY + this.$el.offsetTop + this.$el.offsetHeight > this.maxBottom
     ) {
       let overX = this.originX + offsetX,
         overY = this.originY + offsetY;
@@ -88,12 +90,12 @@
       if (this.originY + offsetY + this.$el.offsetTop < this.maxTop) {
         overY = this.$container.offsetTop - this.$el.offsetTop;
       }
-      if (this.originY + offsetY + this.$el.offsetTop + this.$el.clientHeight > this.maxBottom) {
+      if (this.originY + offsetY + this.$el.offsetTop + this.$el.offsetHeight > this.maxBottom) {
         overY =
           this.$container.offsetTop +
-          this.$container.clientHeight -
+          this.$container.offsetHeight -
           this.$el.offsetTop -
-          this.$el.clientHeight;
+          this.$el.offsetHeight;
       }
       this.$el.style.transform = `translate(${overX}px,${overY}px)`;
     } else {
@@ -119,6 +121,7 @@
 
     root.removeEventListener('mousemove', this.handleMouseMove);
   }
+
   if (!root.Draggable) {
     root.Draggable = Draggable;
   }
