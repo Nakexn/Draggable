@@ -38,7 +38,6 @@
     this.$target.addEventListener('mousedown', handleMouseDown.bind(this));
 
     root.addEventListener('mouseup', handleEnd.bind(this));
-    root.addEventListener('mouseleave', handleEnd.bind(this));
 
     root.addEventListener('resize', () => {
       this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
