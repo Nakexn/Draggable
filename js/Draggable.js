@@ -1,4 +1,4 @@
-(function () {
+(function (root) {
   const re = /\(([^)]*)\)/;
 
   function Draggable(el, options = {}) {
@@ -35,10 +35,10 @@
     this.$el.addEventListener('contextmenu', e => {
       e.preventDefault();
     });
-    // this.$target.addEventListener('mouseup', handleEnd.bind(this));
-    window.addEventListener('mouseup', handleEnd.bind(this));
-    window.addEventListener('mouseleave', handleEnd.bind(this));
-    window.addEventListener('resize', () => {
+
+    root.addEventListener('mouseup', handleEnd.bind(this));
+    root.addEventListener('mouseleave', handleEnd.bind(this));
+    root.addEventListener('resize', () => {
       this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
       this.maxRight =
         this.$container.offsetLeft +
@@ -61,7 +61,7 @@
     if (e.button === 0) {
       this.mouseX = e.pageX;
       this.mouseY = e.pageY;
-      window.addEventListener('mousemove', this.handleMouseMove);
+      root.addEventListener('mousemove', this.handleMouseMove);
     }
   }
 
@@ -117,8 +117,9 @@
       this.originY = parseFloat(originY);
     }
 
-    window.removeEventListener('mousemove', this.handleMouseMove);
+    root.removeEventListener('mousemove', this.handleMouseMove);
   }
-
-  window.Draggable = Draggable;
-})();
+  if (!root.Draggable) {
+    root.Draggable = Draggable;
+  }
+})(window);
