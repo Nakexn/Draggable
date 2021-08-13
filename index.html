@@ -40,7 +40,11 @@
     </style>
     <script>
       window.onload = function () {
-        let instance = new Draggable('#el', { container: '#container', target: '#footer' });
+        let instance = new Draggable('#el', {
+          container: '#container',
+          target: '#footer',
+          resize: true
+        });
       };
     </script>
   </head>

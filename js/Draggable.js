@@ -1,125 +1,77 @@
 (function (root) {
-  const re = /\(([^)]*)\)/;
-
   function Draggable(el, options = {}) {
     this.$el = document.querySelector(el);
-    this.$target = this.$el;
-    this.$container = document.documentElement;
-    this.originX = 0;
-    this.originY = 0;
-    this.mouseX = null;
-    this.mouseY = null;
-    if (options.container) {
-      this.$container = document.querySelector(options.container);
-    }
-    if (options.target) {
-      this.$target = document.querySelector(`${el} ${options.target}`);
-    }
-    this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
-    this.maxRight =
-      this.$container.offsetLeft +
-      this.$container.offsetWidth -
-      this.$el.offsetLeft -
-      this.$el.offsetWidth;
-    this.maxTop = this.$container.offsetTop;
-    this.maxBottom = this.$container.offsetTop + this.$container.offsetHeight;
-    this.rect = this.$el.getBoundingClientRect();
-    this.$container.style.overflow = 'hidden';
-    this.handleMouseMove = handleMouseMove.bind(this);
+    this.$target = document.querySelector(`${el} ${options.target}`) || this.$el;
+    this.$container = document.querySelector(options.container) || document.documentElement;
+    this.resize = options.resize || true;
     this.init();
   }
 
   Draggable.prototype.init = function () {
-    this.$el.addEventListener('contextmenu', e => {
-      e.preventDefault();
-    });
-
-    this.$target.addEventListener('mouseover', handleMouseOver.bind(this));
-    this.$target.addEventListener('mousedown', handleMouseDown.bind(this));
-
-    root.addEventListener('mouseup', handleEnd.bind(this));
-
-    root.addEventListener('resize', () => {
-      this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
-      this.maxRight =
-        this.$container.offsetLeft +
-        this.$container.offsetWidth -
-        this.$el.offsetLeft -
-        this.$el.offsetWidth;
-      this.maxTop = this.$container.offsetTop;
-      this.maxBottom = this.$container.offsetTop + this.$container.offsetHeight;
-      this.rect = this.$el.getBoundingClientRect();
-    });
+    this.setAttribute();
+    if (this.resize) {
+      this.setOperator();
+    }
+    this.listenEvent();
+  };
+  Draggable.prototype.setAttribute = function () {
+    const $container = this.$container;
+    const $el = this.$el;
+    $container.style.position = 'relative';
+    $el.style.position = 'absolute';
+    this.containerWidth = $container.clientWidth;
+    this.containerHeight = $container.clientHeight;
+    this.containerLeft = $container.offsetLeft;
+    this.containerTop = $container.offsetTop;
   };
 
-  function handleMouseOver(e) {
-    this.$target.style.cursor = 'move';
-  }
+  Draggable.prototype.setOperator = function () {};
 
-  function handleMouseDown(e) {
-    e.preventDefault();
+  Draggable.prototype.listenEvent = function () {
+    const $target = this.$target;
+    const $el = this.$el;
+    $target.onmousedown = e => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    if (e.button === 0) {
-      this.mouseX = e.pageX;
-      this.mouseY = e.pageY;
-      root.addEventListener('mousemove', this.handleMouseMove);
+      const distanceX = e.clientX - $el.offsetLeft;
+      const distanceY = e.clientY - $el.offsetTop;
+
+      root.onmousemove = e => {
+        $el.style.left = e.clientX - distanceX + 'px';
+        $el.style.top = e.clientY - distanceY + 'px';
+        this.handleOverBoundary();
+      };
+
+      root.onmouseup = e => {
+        root.onmousemove = null;
+        root.onmouseup = null;
+      };
+    };
+    root.onresize = e => {
+      this.setAttribute();
+    };
+  };
+
+  Draggable.prototype.handleOverBoundary = function () {
+    const $el = this.$el;
+    const top = $el.offsetTop;
+    const right = this.containerWidth - $el.offsetLeft - $el.clientWidth;
+    const bottom = this.containerHeight - $el.offsetTop - $el.clientHeight;
+    const left = $el.offsetLeft;
+    if (top < 0) {
+      $el.style.top = '0px';
     }
-  }
-
-  function handleMouseMove(e) {
-    e.preventDefault();
-
-    const offsetX = e.pageX - this.mouseX;
-    const offsetY = e.pageY - this.mouseY;
-
-    if (
-      this.originX + offsetX < this.maxLeft ||
-      this.originX + offsetX > this.maxRight ||
-      this.originY + offsetY + this.$el.offsetTop < this.maxTop ||
-      this.originY + offsetY + this.$el.offsetTop + this.$el.offsetHeight > this.maxBottom
-    ) {
-      let overX = this.originX + offsetX,
-        overY = this.originY + offsetY;
-      if (this.originX + offsetX < this.maxLeft) {
-        overX = this.maxLeft;
-      }
-      if (this.originX + offsetX > this.maxRight) {
-        overX = this.maxRight;
-      }
-      if (this.originY + offsetY + this.$el.offsetTop < this.maxTop) {
-        overY = this.$container.offsetTop - this.$el.offsetTop;
-      }
-      if (this.originY + offsetY + this.$el.offsetTop + this.$el.offsetHeight > this.maxBottom) {
-        overY =
-          this.$container.offsetTop +
-          this.$container.offsetHeight -
-          this.$el.offsetTop -
-          this.$el.offsetHeight;
-      }
-      this.$el.style.transform = `translate(${overX}px,${overY}px)`;
-    } else {
-      this.$el.style.transform = `translate(${this.originX + offsetX}px,${
-        this.originY + offsetY
-      }px)`;
+    if (right < 0) {
+      $el.style.left = `${this.containerWidth - $el.clientWidth}px`;
     }
-  }
-
-  function handleEnd(e) {
-    e.preventDefault();
-
-    const computedStyle = window.getComputedStyle(this.$el).transform.match(re);
-
-    if (computedStyle) {
-      const matrix = computedStyle[1];
-      const originX = matrix.split(', ')[4];
-      const originY = matrix.split(', ')[5];
-
-      this.originX = parseFloat(originX);
-      this.originY = parseFloat(originY);
+    if (bottom < 0) {
+      $el.style.top = `${this.containerHeight - $el.clientHeight}px`;
     }
-
-    root.removeEventListener('mousemove', this.handleMouseMove);
-  }
+    if (left < 0) {
+      $el.style.left = `0px`;
+    }
+  };
 
   if (!root.Draggable) {
     root.Draggable = Draggable;
