@@ -43,23 +43,27 @@
           $span.style.height = '10px';
           $span.style.width = '100%';
           $span.style.top = '0px';
+          $span.style.cursor = 'n-resize';
         }
         if (item === 'r') {
           $span.style.height = '100%';
           $span.style.width = '10px';
           $span.style.top = '0px';
           $span.style.right = '0px';
+          $span.style.cursor = 'e-resize';
         }
         if (item === 'b') {
           $span.style.height = '10px';
           $span.style.width = '100%';
           $span.style.bottom = '0px';
+          $span.style.cursor = 's-resize';
         }
         if (item === 'l') {
           $span.style.height = '100%';
           $span.style.width = '10px';
           $span.style.top = '0px';
           $span.style.left = '0px';
+          $span.style.cursor = 'w-resize';
         }
       }
       if (item.length === 2) {
@@ -70,18 +74,22 @@
         if (item === 'tl') {
           $span.style.top = '-5px';
           $span.style.left = '-5px';
+          $span.style.cursor = 'nwse-resize';
         }
         if (item === 'tr') {
           $span.style.top = '-5px';
           $span.style.right = '-5px';
+          $span.style.cursor = 'nesw-resize';
         }
         if (item === 'bl') {
           $span.style.bottom = '-5px';
           $span.style.left = '-5px';
+          $span.style.cursor = 'nesw-resize';
         }
         if (item === 'br') {
           $span.style.bottom = '-5px';
           $span.style.right = '-5px';
+          $span.style.cursor = 'nwse-resize';
         }
       }
       $span.onmousedown = e => {
