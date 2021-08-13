@@ -2,7 +2,8 @@
   function Draggable(el, options = {}) {
     this.$el = document.querySelector(el);
     this.$target = document.querySelector(`${el} ${options.target}`) || this.$el;
-    this.$container = document.querySelector(options.container) || document.documentElement;
+    this.$container =
+      document.querySelector(options.container) || this.$el.parentNode || document.documentElement;
     this.resize = options.resize || true;
     this.init();
   }
@@ -10,7 +11,7 @@
   Draggable.prototype.init = function () {
     this.setAttribute();
     if (this.resize) {
-      this.setOperator();
+      this.createOperator();
     }
     this.listenEvent();
   };
@@ -25,7 +26,9 @@
     this.containerTop = $container.offsetTop;
   };
 
-  Draggable.prototype.setOperator = function () {};
+  Draggable.prototype.createOperator = function () {
+    const charArray = ['t', 'r', 'b', 'l', 'tl', 'tr', 'rb', 'bl'];
+  };
 
   Draggable.prototype.listenEvent = function () {
     const $target = this.$target;
@@ -34,12 +37,12 @@
       e.preventDefault();
       e.stopPropagation();
 
-      const distanceX = e.clientX - $el.offsetLeft;
-      const distanceY = e.clientY - $el.offsetTop;
+      const distanceX = e.pageX - $el.offsetLeft;
+      const distanceY = e.pageY - $el.offsetTop;
 
       root.onmousemove = e => {
-        $el.style.left = e.clientX - distanceX + 'px';
-        $el.style.top = e.clientY - distanceY + 'px';
+        $el.style.left = e.pageX - distanceX + 'px';
+        $el.style.top = e.pageY - distanceY + 'px';
         this.handleOverBoundary();
       };
 
