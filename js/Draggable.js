@@ -4,7 +4,7 @@
     this.$target = document.querySelector(`${el} ${options.target}`) || this.$el;
     this.$container =
       document.querySelector(options.container) || this.$el.parentNode || document.documentElement;
-    this.resize = options.resize || true;
+    this.resize = options.resize ? options.resize : null;
     this.init();
   }
 
@@ -27,7 +27,26 @@
   };
 
   Draggable.prototype.createOperator = function () {
+    const $el = this.$el;
     const charArray = ['t', 'r', 'b', 'l', 'tl', 'tr', 'rb', 'bl'];
+    let operatorArray = [];
+    charArray.forEach(item => {
+      let $span = document.createElement('span');
+      $span.className = item;
+      $span.style.position = 'absolute';
+      if (item.length === 1) {
+        $span.style.background = 'transparent';
+      }
+      if (item.length === 2) {
+        $span.style.width = '10px';
+        $span.style.height = '10px';
+        $span.style.background = 'yellow';
+      }
+      operatorArray.push($span);
+    });
+    operatorArray.forEach(item => {
+      $el.appendChild(item);
+    });
   };
 
   Draggable.prototype.listenEvent = function () {
