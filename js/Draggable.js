@@ -48,6 +48,11 @@
         root.onmouseup = null;
       };
     };
+
+    $target.onmouseenter = e => {
+      $target.style.cursor = 'move';
+    };
+
     root.onresize = e => {
       this.setAttribute();
     };
