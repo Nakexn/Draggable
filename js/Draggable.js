@@ -17,18 +17,22 @@
 
   Draggable.prototype.init = function () {
     this.setDrag();
+    if (this.resize) {
+      this.setResize();
+    }
+    var debouncedSetBoundary = debounce(this.setBoundary);
+    window.addEventListener('resize', debouncedSetBoundary.bind(this), false);
   };
 
   Draggable.prototype.setDrag = function () {
     var self = this;
-    var $el = self.$el;
     var $target = self.$target;
-    var $container = self.$container;
 
-    setBoundary();
+    self.setBoundary();
 
     $target.addEventListener('mousedown', start, false);
     $target.addEventListener('mouseover', over, false);
+    $target.addEventListener('resize', self.setBoundary.bind(self), false);
 
     function start(event) {
       self.mouseX = event.pageX;
@@ -55,17 +59,17 @@
       var distanceX = currentX - self.mouseX;
       var distanceY = currentY - self.mouseY;
 
-      if (distanceX < self.leftBoundary) {
-        distanceX = self.leftBoundary;
+      if (self.originX + distanceX < self.leftBoundary) {
+        distanceX = self.leftBoundary - self.originX;
       }
-      if (distanceX > self.rightBoundary) {
-        distanceX = self.rightBoundary;
+      if (self.originX + distanceX > self.rightBoundary) {
+        distanceX = self.rightBoundary - self.originX;
       }
-      if (distanceY < self.topBoundary) {
-        distanceY = self.topBoundary;
+      if (self.originY + distanceY < self.topBoundary) {
+        distanceY = self.topBoundary - self.originY;
       }
-      if (distanceY > self.bottomBoundary) {
-        distanceY = self.bottomBoundary;
+      if (self.originY + distanceY > self.bottomBoundary) {
+        distanceY = self.bottomBoundary - self.originY;
       }
 
       self.setPostion({
@@ -82,17 +86,9 @@
       document.removeEventListener('mouseup', end);
       document.removeEventListener('contextmenu', rightClick);
     }
-
-    function setBoundary() {
-      self.topBoundary = $container.offsetTop - $el.offsetTop;
-      self.rightBoundary =
-        $container.offsetLeft + $container.offsetWidth - $el.offsetLeft - $el.offsetWidth;
-      self.bottomBoundary =
-        $container.offsetTop + $container.offsetHeight - $el.offsetTop - $el.offsetHeight;
-      self.leftBoundary = $container.offsetLeft - $el.offsetLeft;
-      console.log(self.topBoundary);
-    }
   };
+
+  Draggable.prototype.setResize = function () {};
 
   Draggable.prototype.getStyle = function (property) {
     return document.defaultView.getComputedStyle
@@ -136,6 +132,18 @@
     }
   };
 
+  Draggable.prototype.setBoundary = function () {
+    var $el = this.$el;
+    var $container = this.$container;
+
+    this.topBoundary = $container.offsetTop - $el.offsetTop;
+    this.rightBoundary =
+      $container.offsetLeft + $container.offsetWidth - $el.offsetLeft - $el.offsetWidth;
+    this.bottomBoundary =
+      $container.offsetTop + $container.offsetHeight - $el.offsetTop - $el.offsetHeight;
+    this.leftBoundary = $container.offsetLeft - $el.offsetLeft;
+  };
+
   function getTransform() {
     var transform = '',
       divStyle = document.createElement('div').style,
@@ -152,6 +160,14 @@
 
     // 如果没有找到，就直接返回空字符串
     return transform;
+  }
+
+  function debounce(callback, delay = 200) {
+    var timeout;
+    return function () {
+      clearTimeout(timeout);
+      timeout = setTimeout(callback.bind(this), delay);
+    };
   }
 
   window.Draggable = Draggable;
