@@ -11,7 +11,7 @@
     this.originY = 0;
     this.mouseX = 0;
     this.mouseY = 0;
-    this.resize = options;
+    this.resize = options.resize ? options.resize : false;
     this.init();
   }
 
@@ -29,7 +29,6 @@
 
     $target.addEventListener('mousedown', start, false);
     $target.addEventListener('mouseover', over, false);
-    window.addEventListener('resize', setBoundary, false);
 
     function start(event) {
       self.mouseX = event.pageX;
