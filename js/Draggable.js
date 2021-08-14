@@ -32,7 +32,6 @@
 
     $target.addEventListener('mousedown', start, false);
     $target.addEventListener('mouseover', over, false);
-    $target.addEventListener('resize', self.setBoundary.bind(self), false);
 
     function start(event) {
       self.mouseX = event.pageX;
@@ -88,7 +87,81 @@
     }
   };
 
-  Draggable.prototype.setResize = function () {};
+  Draggable.prototype.setResize = function () {
+    var self = this;
+    var $el = self.$el;
+    $el.style.position = 'relative';
+    var charArray = ['t', 'r', 'b', 'l'];
+    var operatorArray = [];
+
+    charArray.forEach(item => {
+      var $span = document.createElement('span');
+      $span.className = item;
+      $span.style.position = 'absolute';
+
+      $span.style.background = 'transparent';
+      if (item === 't') {
+        $span.style.height = '10px';
+        $span.style.width = '100%';
+        $span.style.top = '0px';
+        $span.style.cursor = 'n-resize';
+      }
+      if (item === 'r') {
+        $span.style.height = '100%';
+        $span.style.width = '10px';
+        $span.style.top = '0px';
+        $span.style.right = '0px';
+        $span.style.cursor = 'e-resize';
+      }
+      if (item === 'b') {
+        $span.style.height = '10px';
+        $span.style.width = '100%';
+        $span.style.bottom = '0px';
+        $span.style.cursor = 's-resize';
+      }
+      if (item === 'l') {
+        $span.style.height = '100%';
+        $span.style.width = '10px';
+        $span.style.top = '0px';
+        $span.style.left = '0px';
+        $span.style.cursor = 'w-resize';
+      }
+
+      $span.addEventListener('mousedown', start, false);
+
+      operatorArray.push($span);
+    });
+
+    operatorArray.forEach(item => {
+      $el.appendChild(item);
+    });
+
+    function start(event) {
+      self.mouseX = event.pageX;
+      self.mouseY = event.pageY;
+
+      var pos = self.getPosition();
+
+      self.originX = pos.x;
+      self.originY = pos.y;
+
+      document.addEventListener('mousemove', move, false);
+      document.addEventListener('mouseup', end, false);
+    }
+
+    function move(event) {
+      var currentX = event.pageX;
+      var currentY = event.pageY;
+
+      var distanceX = currentX - self.mouseX;
+      var distanceY = currentY - self.mouseY;
+    }
+
+    function end(event) {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
+    }
+  };
 
   Draggable.prototype.getStyle = function (property) {
     return document.defaultView.getComputedStyle
