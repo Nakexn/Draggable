@@ -15,10 +15,6 @@
   }
 
   Draggable.prototype.init = function () {
-    this.$target.addEventListener('contextmenu', e => {
-      e.preventDefault();
-    });
-
     this.setDrag();
   };
 
@@ -27,38 +23,42 @@
     this.$target.addEventListener('mousedown', start, false);
     this.$target.addEventListener('mouseover', over, false);
     function start(event) {
-      self.startX = event.pageX;
-      self.startY = event.pageY;
+      self.mouseX = event.pageX;
+      self.mouseY = event.pageY;
 
       var pos = self.getPosition();
 
-      self.sourceX = pos.x;
-      self.sourceY = pos.y;
+      self.originX = pos.x;
+      self.originY = pos.y;
 
       document.addEventListener('mousemove', move, false);
+      document.addEventListener('contextmenu', rightClick, false);
       document.addEventListener('mouseup', end, false);
+    }
+    function over(event) {
+      self.$target.style.cursor = 'move';
     }
 
     function move(event) {
       var currentX = event.pageX;
       var currentY = event.pageY;
 
-      var distanceX = currentX - self.startX;
-      var distanceY = currentY - self.startY;
+      var distanceX = currentX - self.mouseX;
+      var distanceY = currentY - self.mouseY;
 
       self.setPostion({
-        x: (self.sourceX + distanceX).toFixed(),
-        y: (self.sourceY + distanceY).toFixed()
+        x: (self.originX + distanceX).toFixed(),
+        y: (self.originY + distanceY).toFixed()
       });
+    }
+    function rightClick(event) {
+      event.preventDefault();
     }
 
     function end(event) {
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', end);
-      // do other things
-    }
-    function over(event) {
-      self.$target.style.cursor = 'move';
+      document.removeEventListener('contextmenu', rightClick);
     }
   };
 
