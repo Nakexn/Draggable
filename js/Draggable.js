@@ -1,127 +1,126 @@
-(function (root) {
-  const re = /\(([^)]*)\)/;
+(function (window, document) {
+  const transform = getTransform();
 
-  function Draggable(el, options = {}) {
-    this.$el = document.querySelector(el);
-    this.$target = this.$el;
-    this.$container = document.documentElement;
+  function Draggable(selector, options = {}) {
+    this.$el = document.querySelector(selector);
+    this.$target = options.target ? document.querySelector(options.target) : this.$el;
+    this.$container = options.container
+      ? document.querySelector(options.container)
+      : this.$el.parentNode;
     this.originX = 0;
     this.originY = 0;
-    this.mouseX = null;
-    this.mouseY = null;
-    if (options.container) {
-      this.$container = document.querySelector(options.container);
-    }
-    if (options.target) {
-      this.$target = document.querySelector(`${el} ${options.target}`);
-    }
-    this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
-    this.maxRight =
-      this.$container.offsetLeft +
-      this.$container.offsetWidth -
-      this.$el.offsetLeft -
-      this.$el.offsetWidth;
-    this.maxTop = this.$container.offsetTop;
-    this.maxBottom = this.$container.offsetTop + this.$container.offsetHeight;
-    this.rect = this.$el.getBoundingClientRect();
-    this.$container.style.overflow = 'hidden';
-    this.handleMouseMove = handleMouseMove.bind(this);
+    this.mouseX = 0;
+    this.mouseY = 0;
     this.init();
   }
 
   Draggable.prototype.init = function () {
-    this.$el.addEventListener('contextmenu', e => {
+    this.$target.addEventListener('contextmenu', e => {
       e.preventDefault();
     });
 
-    this.$target.addEventListener('mouseover', handleMouseOver.bind(this));
-    this.$target.addEventListener('mousedown', handleMouseDown.bind(this));
-
-    root.addEventListener('mouseup', handleEnd.bind(this));
-
-    root.addEventListener('resize', () => {
-      this.maxLeft = this.$container.offsetLeft - this.$el.offsetLeft;
-      this.maxRight =
-        this.$container.offsetLeft +
-        this.$container.offsetWidth -
-        this.$el.offsetLeft -
-        this.$el.offsetWidth;
-      this.maxTop = this.$container.offsetTop;
-      this.maxBottom = this.$container.offsetTop + this.$container.offsetHeight;
-      this.rect = this.$el.getBoundingClientRect();
-    });
+    this.setDrag();
   };
 
-  function handleMouseOver(e) {
-    this.$target.style.cursor = 'move';
-  }
+  Draggable.prototype.setDrag = function () {
+    var self = this;
+    this.$target.addEventListener('mousedown', start, false);
+    this.$target.addEventListener('mouseover', over, false);
+    function start(event) {
+      self.startX = event.pageX;
+      self.startY = event.pageY;
 
-  function handleMouseDown(e) {
-    e.preventDefault();
+      var pos = self.getPosition();
 
-    if (e.button === 0) {
-      this.mouseX = e.pageX;
-      this.mouseY = e.pageY;
-      root.addEventListener('mousemove', this.handleMouseMove);
+      self.sourceX = pos.x;
+      self.sourceY = pos.y;
+
+      document.addEventListener('mousemove', move, false);
+      document.addEventListener('mouseup', end, false);
     }
-  }
 
-  function handleMouseMove(e) {
-    e.preventDefault();
+    function move(event) {
+      var currentX = event.pageX;
+      var currentY = event.pageY;
 
-    const offsetX = e.pageX - this.mouseX;
-    const offsetY = e.pageY - this.mouseY;
+      var distanceX = currentX - self.startX;
+      var distanceY = currentY - self.startY;
 
-    if (
-      this.originX + offsetX < this.maxLeft ||
-      this.originX + offsetX > this.maxRight ||
-      this.originY + offsetY + this.$el.offsetTop < this.maxTop ||
-      this.originY + offsetY + this.$el.offsetTop + this.$el.offsetHeight > this.maxBottom
-    ) {
-      let overX = this.originX + offsetX,
-        overY = this.originY + offsetY;
-      if (this.originX + offsetX < this.maxLeft) {
-        overX = this.maxLeft;
+      self.setPostion({
+        x: (self.sourceX + distanceX).toFixed(),
+        y: (self.sourceY + distanceY).toFixed()
+      });
+    }
+
+    function end(event) {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', end);
+      // do other things
+    }
+    function over(event) {
+      self.$target.style.cursor = 'move';
+    }
+  };
+
+  Draggable.prototype.getStyle = function (property) {
+    return document.defaultView.getComputedStyle
+      ? document.defaultView.getComputedStyle(this.$el, false)[property]
+      : this.$el.currentStyle[property];
+  };
+
+  Draggable.prototype.getPosition = function () {
+    var pos = { x: 0, y: 0 };
+    if (transform) {
+      var transformValue = this.getStyle(transform);
+      if (transformValue == 'none') {
+        this.$el.style[transform] = 'translate(0, 0)';
+      } else {
+        var temp = transformValue.match(/-?\d+/g);
+        pos = {
+          x: parseInt(temp[4].trim()),
+          y: parseInt(temp[5].trim())
+        };
       }
-      if (this.originX + offsetX > this.maxRight) {
-        overX = this.maxRight;
-      }
-      if (this.originY + offsetY + this.$el.offsetTop < this.maxTop) {
-        overY = this.$container.offsetTop - this.$el.offsetTop;
-      }
-      if (this.originY + offsetY + this.$el.offsetTop + this.$el.offsetHeight > this.maxBottom) {
-        overY =
-          this.$container.offsetTop +
-          this.$container.offsetHeight -
-          this.$el.offsetTop -
-          this.$el.offsetHeight;
-      }
-      this.$el.style.transform = `translate(${overX}px,${overY}px)`;
     } else {
-      this.$el.style.transform = `translate(${this.originX + offsetX}px,${
-        this.originY + offsetY
-      }px)`;
-    }
-  }
-
-  function handleEnd(e) {
-    e.preventDefault();
-
-    const computedStyle = window.getComputedStyle(this.$el).transform.match(re);
-
-    if (computedStyle) {
-      const matrix = computedStyle[1];
-      const originX = matrix.split(', ')[4];
-      const originY = matrix.split(', ')[5];
-
-      this.originX = parseFloat(originX);
-      this.originY = parseFloat(originY);
+      if (this.getStyle('position') == 'static') {
+        this.$el.style.position = 'relative';
+      } else {
+        pos = {
+          x: parseInt(this.getStyle('left') ? this.getStyle('left') : 0),
+          y: parseInt(this.getStyle('top') ? this.getStyle('top') : 0)
+        };
+      }
     }
 
-    root.removeEventListener('mousemove', this.handleMouseMove);
+    return pos;
+  };
+
+  Draggable.prototype.setPostion = function (pos) {
+    if (transform) {
+      this.$el.style[transform] = 'translate(' + pos.x + 'px, ' + pos.y + 'px)';
+    } else {
+      this.$el.style.left = pos.x + 'px';
+      this.$el.style.top = pos.y + 'px';
+    }
+  };
+
+  function getTransform() {
+    var transform = '',
+      divStyle = document.createElement('div').style,
+      _transforms = ['transform', 'webkitTransform', 'MozTransform', 'msTransform', 'OTransform'],
+      i = 0,
+      len = _transforms.length;
+
+    for (; i < len; i++) {
+      if (_transforms[i] in divStyle) {
+        // 找到之后立即返回，结束函数
+        return (transform = _transforms[i]);
+      }
+    }
+
+    // 如果没有找到，就直接返回空字符串
+    return transform;
   }
 
-  if (!root.Draggable) {
-    root.Draggable = Draggable;
-  }
-})(window);
+  window.Draggable = Draggable;
+})(window, document);
