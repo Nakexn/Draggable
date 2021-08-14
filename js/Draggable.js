@@ -11,6 +11,7 @@
     this.originY = 0;
     this.mouseX = 0;
     this.mouseY = 0;
+    this.resize = options;
     this.init();
   }
 
@@ -20,8 +21,16 @@
 
   Draggable.prototype.setDrag = function () {
     var self = this;
-    this.$target.addEventListener('mousedown', start, false);
-    this.$target.addEventListener('mouseover', over, false);
+    var $el = self.$el;
+    var $target = self.$target;
+    var $container = self.$container;
+
+    setBoundary();
+
+    $target.addEventListener('mousedown', start, false);
+    $target.addEventListener('mouseover', over, false);
+    window.addEventListener('resize', setBoundary, false);
+
     function start(event) {
       self.mouseX = event.pageX;
       self.mouseY = event.pageY;
@@ -35,6 +44,7 @@
       document.addEventListener('contextmenu', rightClick, false);
       document.addEventListener('mouseup', end, false);
     }
+
     function over(event) {
       self.$target.style.cursor = 'move';
     }
@@ -45,6 +55,19 @@
 
       var distanceX = currentX - self.mouseX;
       var distanceY = currentY - self.mouseY;
+
+      if (distanceX < self.leftBoundary) {
+        distanceX = self.leftBoundary;
+      }
+      if (distanceX > self.rightBoundary) {
+        distanceX = self.rightBoundary;
+      }
+      if (distanceY < self.topBoundary) {
+        distanceY = self.topBoundary;
+      }
+      if (distanceY > self.bottomBoundary) {
+        distanceY = self.bottomBoundary;
+      }
 
       self.setPostion({
         x: (self.originX + distanceX).toFixed(),
@@ -59,6 +82,16 @@
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', end);
       document.removeEventListener('contextmenu', rightClick);
+    }
+
+    function setBoundary() {
+      self.topBoundary = $container.offsetTop - $el.offsetTop;
+      self.rightBoundary =
+        $container.offsetLeft + $container.offsetWidth - $el.offsetLeft - $el.offsetWidth;
+      self.bottomBoundary =
+        $container.offsetTop + $container.offsetHeight - $el.offsetTop - $el.offsetHeight;
+      self.leftBoundary = $container.offsetLeft - $el.offsetLeft;
+      console.log(self.topBoundary);
     }
   };
 
