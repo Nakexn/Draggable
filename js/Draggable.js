@@ -106,29 +106,29 @@
 
         $span.style.background = 'transparent';
         if (item === 't') {
-          $span.style.height = '20px';
+          $span.style.height = '10px';
           $span.style.width = '100%';
-          $span.style.top = '-10px';
+          $span.style.top = '0px';
           $span.style.cursor = 'row-resize';
         }
         if (item === 'r') {
           $span.style.height = '100%';
-          $span.style.width = '20px';
+          $span.style.width = '10px';
           $span.style.top = '0px';
-          $span.style.right = '-10px';
+          $span.style.right = '0px';
           $span.style.cursor = 'col-resize';
         }
         if (item === 'b') {
-          $span.style.height = '20px';
+          $span.style.height = '10px';
           $span.style.width = '100%';
-          $span.style.bottom = '-10px';
+          $span.style.bottom = '0px';
           $span.style.cursor = 'row-resize';
         }
         if (item === 'l') {
           $span.style.height = '100%';
-          $span.style.width = '20px';
+          $span.style.width = '10px';
           $span.style.top = '0px';
-          $span.style.left = '-10px';
+          $span.style.left = '0px';
           $span.style.cursor = 'col-resize';
         }
 
