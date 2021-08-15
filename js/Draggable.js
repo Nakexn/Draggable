@@ -295,12 +295,10 @@
 
     for (; i < len; i++) {
       if (_transforms[i] in divStyle) {
-        // 找到之后立即返回，结束函数
         return (transform = _transforms[i]);
       }
     }
 
-    // 如果没有找到，就直接返回空字符串
     return transform;
   }
 
