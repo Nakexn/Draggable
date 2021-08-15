@@ -17,9 +17,7 @@
 
   Draggable.prototype.init = function () {
     this.setDrag();
-    if (this.resize) {
-      this.setResize();
-    }
+
     var debouncedSetBoundary = debounce(this.setBoundary);
     window.addEventListener('resize', debouncedSetBoundary.bind(this), false);
   };
@@ -30,10 +28,17 @@
 
     self.setBoundary();
 
+    if (self.resize) {
+      setResize();
+    }
+
     $target.addEventListener('mousedown', start, false);
     $target.addEventListener('mouseover', over, false);
 
     function start(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
       self.mouseX = event.pageX;
       self.mouseY = event.pageY;
 
@@ -85,81 +90,131 @@
       document.removeEventListener('mouseup', end);
       document.removeEventListener('contextmenu', rightClick);
     }
-  };
+    function setResize() {
+      var $el = self.$el;
+      $el.style.position = 'relative';
+      var charArray = ['t', 'r', 'b', 'l'];
+      var operatorArray = [];
 
-  Draggable.prototype.setResize = function () {
-    var self = this;
-    var $el = self.$el;
-    $el.style.position = 'relative';
-    var charArray = ['t', 'r', 'b', 'l'];
-    var operatorArray = [];
+      charArray.forEach(item => {
+        var $span = document.createElement('span');
+        $span.className = item;
+        $span.style.position = 'absolute';
 
-    charArray.forEach(item => {
-      var $span = document.createElement('span');
-      $span.className = item;
-      $span.style.position = 'absolute';
+        $span.style.background = 'transparent';
+        if (item === 't') {
+          $span.style.height = '20px';
+          $span.style.width = '100%';
+          $span.style.top = '-10px';
+          $span.style.cursor = 'row-resize';
+        }
+        if (item === 'r') {
+          $span.style.height = '100%';
+          $span.style.width = '20px';
+          $span.style.top = '0px';
+          $span.style.right = '-10px';
+          $span.style.cursor = 'col-resize';
+        }
+        if (item === 'b') {
+          $span.style.height = '20px';
+          $span.style.width = '100%';
+          $span.style.bottom = '-10px';
+          $span.style.cursor = 'row-resize';
+        }
+        if (item === 'l') {
+          $span.style.height = '100%';
+          $span.style.width = '20px';
+          $span.style.top = '0px';
+          $span.style.left = '-10px';
+          $span.style.cursor = 'col-resize';
+        }
 
-      $span.style.background = 'transparent';
-      if (item === 't') {
-        $span.style.height = '10px';
-        $span.style.width = '100%';
-        $span.style.top = '0px';
-        $span.style.cursor = 'n-resize';
+        addListener($span);
+
+        operatorArray.push($span);
+      });
+
+      operatorArray.forEach(item => {
+        $el.appendChild(item);
+      });
+
+      function addListener(el) {
+        el.addEventListener('mousedown', startResize, false);
       }
-      if (item === 'r') {
-        $span.style.height = '100%';
-        $span.style.width = '10px';
-        $span.style.top = '0px';
-        $span.style.right = '0px';
-        $span.style.cursor = 'e-resize';
+
+      function startResize(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var $span = event.target;
+
+        self.resizeX = event.pageX;
+        self.resizeY = event.pageY;
+
+        self.elWidth = self.$el.offsetWidth;
+        self.elHeight = self.$el.offsetHeight;
+
+        var pos = self.getPosition();
+
+        self.originX = pos.x;
+        self.originY = pos.y;
+
+        console.log(pos);
+
+        end();
+
+        document.addEventListener('mousemove', moveResize, false);
+        document.addEventListener('mouseup', endResize, false);
+
+        function moveResize(event) {
+          var currentX = event.pageX;
+          var currentY = event.pageY;
+
+          var distanceX = currentX - self.resizeX;
+          var distanceY = currentY - self.resizeY;
+
+          if (self.originX + distanceX < self.leftBoundary) {
+            distanceX = self.leftBoundary - self.originX;
+          }
+          if (self.originX + distanceX > self.rightBoundary) {
+            distanceX = self.rightBoundary - self.originX;
+          }
+          if (self.originY + distanceY < self.topBoundary) {
+            distanceY = self.topBoundary - self.originY;
+          }
+          if (self.originY + distanceY > self.bottomBoundary) {
+            distanceY = self.bottomBoundary - self.originY;
+          }
+
+          if ($span.className === 't') {
+            self.$el.style.height = `${self.elHeight - distanceY}px`;
+            distanceX = 0;
+          }
+          if ($span.className === 'l') {
+            self.$el.style.width = `${self.elWidth - distanceX}px`;
+            distanceY = 0;
+          }
+          if ($span.className === 'b') {
+            self.$el.style.height = `${self.elHeight + distanceY}px`;
+            distanceX = 0;
+          }
+          if ($span.className === 'r') {
+            self.$el.style.width = `${self.elWidth + distanceX}px`;
+            distanceY = 0;
+          }
+
+          self.setPostion({
+            x: (self.originX + distanceX / 2).toFixed(),
+            y: (self.originY + distanceY / 2).toFixed()
+          });
+        }
+
+        function endResize(event) {
+          self.setBoundary();
+          document.removeEventListener('mousemove', moveResize);
+          document.removeEventListener('mouseup', endResize);
+        }
       }
-      if (item === 'b') {
-        $span.style.height = '10px';
-        $span.style.width = '100%';
-        $span.style.bottom = '0px';
-        $span.style.cursor = 's-resize';
-      }
-      if (item === 'l') {
-        $span.style.height = '100%';
-        $span.style.width = '10px';
-        $span.style.top = '0px';
-        $span.style.left = '0px';
-        $span.style.cursor = 'w-resize';
-      }
-
-      $span.addEventListener('mousedown', start, false);
-
-      operatorArray.push($span);
-    });
-
-    operatorArray.forEach(item => {
-      $el.appendChild(item);
-    });
-
-    function start(event) {
-      self.mouseX = event.pageX;
-      self.mouseY = event.pageY;
-
-      var pos = self.getPosition();
-
-      self.originX = pos.x;
-      self.originY = pos.y;
-
-      document.addEventListener('mousemove', move, false);
-      document.addEventListener('mouseup', end, false);
-    }
-
-    function move(event) {
-      var currentX = event.pageX;
-      var currentY = event.pageY;
-
-      var distanceX = currentX - self.mouseX;
-      var distanceY = currentY - self.mouseY;
-    }
-
-    function end(event) {
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', end);
     }
   };
 
