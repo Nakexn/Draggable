@@ -1,5 +1,7 @@
 (function (window, document) {
-  const transform = getTransform();
+  var transform = getTransform();
+  var MIN_WIDTH = 20;
+  var MIN_HEIGHT = 20;
 
   function Draggable(selector, options = {}) {
     this.$el = document.querySelector(selector);
@@ -93,6 +95,7 @@
     function setResize() {
       var $el = self.$el;
       $el.style.position = 'relative';
+      $el.style.overflow = 'hidden';
       var charArray = ['t', 'r', 'b', 'l'];
       var operatorArray = [];
 
@@ -159,8 +162,6 @@
         self.originX = pos.x;
         self.originY = pos.y;
 
-        console.log(pos);
-
         end();
 
         document.addEventListener('mousemove', moveResize, false);
@@ -173,33 +174,46 @@
           var distanceX = currentX - self.resizeX;
           var distanceY = currentY - self.resizeY;
 
-          if (self.originX + distanceX < self.leftBoundary) {
-            distanceX = self.leftBoundary - self.originX;
-          }
-          if (self.originX + distanceX > self.rightBoundary) {
-            distanceX = self.rightBoundary - self.originX;
-          }
-          if (self.originY + distanceY < self.topBoundary) {
-            distanceY = self.topBoundary - self.originY;
-          }
-          if (self.originY + distanceY > self.bottomBoundary) {
-            distanceY = self.bottomBoundary - self.originY;
+          // 顶部操作条
+          if ($span.className === 't') {
+            if (distanceY < self.topBoundary - self.originY) {
+              distanceY = self.topBoundary - self.originY;
+            }
+            if (distanceY + MIN_HEIGHT > self.elHeight) {
+              distanceY = self.elHeight - MIN_HEIGHT;
+            }
+            self.$el.style.height = `${(self.elHeight - distanceY).toFixed()}px`;
+            distanceX = 0;
           }
 
-          if ($span.className === 't') {
-            self.$el.style.height = `${self.elHeight - distanceY}px`;
-            distanceX = 0;
-          }
-          if ($span.className === 'l') {
-            self.$el.style.width = `${self.elWidth - distanceX}px`;
+          // 右侧操作条
+          if ($span.className === 'r') {
+            if (distanceX - MIN_WIDTH < -self.elWidth) distanceX = -self.elWidth + MIN_WIDTH;
+            if (distanceX > self.rightBoundary - self.originX)
+              distanceX = self.rightBoundary - self.originX;
+
+            self.$el.style.width = `${(self.elWidth + distanceX).toFixed()}px`;
             distanceY = 0;
           }
+
+          // 底部操作条
           if ($span.className === 'b') {
-            self.$el.style.height = `${self.elHeight + distanceY}px`;
+            if (distanceY - MIN_HEIGHT < -self.elHeight) {
+              distanceY = -self.elHeight + MIN_HEIGHT;
+            }
+            if (distanceY > self.bottomBoundary - self.originY) {
+              distanceY = self.bottomBoundary - self.originY;
+            }
+            self.$el.style.height = `${(self.elHeight + distanceY).toFixed()}px`;
             distanceX = 0;
           }
-          if ($span.className === 'r') {
-            self.$el.style.width = `${self.elWidth + distanceX}px`;
+
+          // 左侧操作条
+          if ($span.className === 'l') {
+            if (distanceX < self.leftBoundary - self.originX)
+              distanceX = self.leftBoundary - self.originX;
+            if (distanceX + MIN_WIDTH > self.elWidth) distanceX = self.elWidth - MIN_WIDTH;
+            self.$el.style.width = `${(self.elWidth - distanceX).toFixed()}px`;
             distanceY = 0;
           }
 
