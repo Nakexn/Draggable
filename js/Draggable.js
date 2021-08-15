@@ -1,7 +1,7 @@
 (function (window, document) {
   var transform = getTransform();
-  var MIN_WIDTH = 20;
-  var MIN_HEIGHT = 20;
+  var MIN_WIDTH = 40;
+  var MIN_HEIGHT = 40;
 
   function Draggable(selector, options = {}) {
     this.$el = document.querySelector(selector);
