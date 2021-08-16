@@ -26,7 +26,11 @@
 
   Draggable.prototype.setDrag = function () {
     var self = this;
+    var $el = self.$el;
     var $target = self.$target;
+
+    $el.style.maxWidth = '100%';
+    $el.style.maxHeight = '100%';
 
     self.setBoundary();
 
@@ -275,15 +279,36 @@
   };
 
   Draggable.prototype.setBoundary = function () {
-    var $el = this.$el;
-    var $container = this.$container;
+    var self = this;
+    var $el = self.$el;
+    var $container = self.$container;
 
-    this.topBoundary = $container.offsetTop - $el.offsetTop;
-    this.rightBoundary =
+    self.topBoundary = $container.offsetTop - $el.offsetTop;
+    self.rightBoundary =
       $container.offsetLeft + $container.offsetWidth - $el.offsetLeft - $el.offsetWidth;
-    this.bottomBoundary =
+    self.bottomBoundary =
       $container.offsetTop + $container.offsetHeight - $el.offsetTop - $el.offsetHeight;
-    this.leftBoundary = $container.offsetLeft - $el.offsetLeft;
+    self.leftBoundary = $container.offsetLeft - $el.offsetLeft;
+
+    var pos = self.getPosition();
+
+    if (pos.x < self.leftBoundary) {
+      pos.x = self.leftBoundary;
+    }
+    if (pos.x > self.rightBoundary) {
+      pos.x = self.rightBoundary;
+    }
+    if (pos.y < self.topBoundary) {
+      pos.y = self.topBoundary;
+    }
+    if (pos.y > self.bottomBoundary) {
+      pos.y = self.bottomBoundary;
+    }
+
+    self.setPostion({
+      x: pos.x.toFixed(),
+      y: pos.y.toFixed()
+    });
   };
 
   function getTransform() {
@@ -302,7 +327,7 @@
     return transform;
   }
 
-  function debounce(callback, delay = 200) {
+  function debounce(callback, delay = 100) {
     var timeout;
     return function () {
       clearTimeout(timeout);
