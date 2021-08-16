@@ -20,8 +20,8 @@
   Draggable.prototype.init = function () {
     this.setDrag();
 
-    var debouncedSetBoundary = debounce(this.setBoundary);
-    window.addEventListener('resize', debouncedSetBoundary.bind(this), false);
+    // var debouncedSetBoundary = debounce(this.setBoundary);
+    window.addEventListener('resize', this.setBoundary.bind(this), false);
   };
 
   Draggable.prototype.setDrag = function () {
@@ -327,13 +327,13 @@
     return transform;
   }
 
-  function debounce(callback, delay = 100) {
-    var timeout;
-    return function () {
-      clearTimeout(timeout);
-      timeout = setTimeout(callback.bind(this), delay);
-    };
-  }
+  // function debounce(callback, delay = 100) {
+  //   var timeout;
+  //   return function () {
+  //     clearTimeout(timeout);
+  //     timeout = setTimeout(callback.bind(this), delay);
+  //   };
+  // }
 
   window.Draggable = Draggable;
 })(window, document);
