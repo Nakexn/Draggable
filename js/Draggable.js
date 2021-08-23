@@ -197,6 +197,7 @@
               distanceX = self.rightBoundary - self.originX;
 
             self.$el.style.width = `${(self.elWidth + distanceX).toFixed()}px`;
+            distanceX = 0;
             distanceY = 0;
           }
 
@@ -210,6 +211,7 @@
             }
             self.$el.style.height = `${(self.elHeight + distanceY).toFixed()}px`;
             distanceX = 0;
+            distanceY = 0;
           }
 
           // 左侧操作条
@@ -222,8 +224,8 @@
           }
 
           self.setPostion({
-            x: (self.originX + distanceX / 2).toFixed(),
-            y: (self.originY + distanceY / 2).toFixed()
+            x: (self.originX + distanceX).toFixed(),
+            y: (self.originY + distanceY).toFixed()
           });
         }
 
